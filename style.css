@@ -1,0 +1,78 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row; /* Horizontal layout for map and side panel */
+  height: 100vh;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#map-container {
+  position: relative; /* Container for the map and search input */
+  width: 75%; /* Map takes 75% of the width */
+  height: 100vh; /* Full height of the viewport */
+}
+
+#map {
+  width: 100%; /* Map takes full width of the container */
+  height: 100%; /* Map takes full height of the container */
+}
+
+#side-panel {
+  width: 25%; /* Side panel takes 25% of the width */
+  height: 100vh; /* Side panel takes full height of the viewport */
+  background-color: #f4f4f4; /* Light background color for the side panel */
+  overflow-y: auto; /* Makes the side panel scrollable if content exceeds */
+  padding: 10px;
+}
+
+
+#cities {
+  list-style-type: none; /* Remove the default list bullets */
+  padding: 0; /* Optional: Remove any padding */
+  margin: 0; /* Optional: Remove any margin */
+}
+
+#score {
+  font-size: 20px;
+  background-color: white; /* White background */
+  border: 2px solid black; /* Black border with 2px width */
+  padding: 10px; /* Optional: Add some padding inside the div */
+  margin: 10px; /* Optional: Add some spacing around the div */
+  border-radius: 5px; /* Optional: Slightly rounded corners */
+  text-align: center; /* Optional: Center the text */
+}
+
+h2 {
+  text-align: center; /* Centers the text horizontally */
+  font-size: 24px; /* Adjust font size as needed */
+  margin: 20px 0; /* Add vertical spacing above and below */
+  color: #333; /* Optional: Set the text color */
+  font-weight: bold; /* Optional: Make the text bold */
+}
+
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column; /* Stack map and side panel vertically on small screens */
+  }
+
+  #map-container {
+    width: 100%; /* Full width for map container on mobile */
+  }
+
+  #map {
+    width: 100%;
+    height: 60vh; /* Map takes 60% of the height */
+  }
+
+  #side-panel {
+    width: 100%;
+    height: 40vh; /* Side panel takes 40% of the height */
+  }
+
+ 
+}
