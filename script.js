@@ -83,10 +83,6 @@ const fetchSettlementsOnClick = (event) => {
 
   showSearchingMessage();
 
-  // ... [Keep everything in fetchSettlementsOnClick up to showSearchingMessage()] ...
-
-  showSearchingMessage();
-
   const query = `[out:json][timeout:25];
     (
       node["place"~"city"](${lat - 1.0},${lng - 1.0},${lat + 1.0},${lng + 1.0});
