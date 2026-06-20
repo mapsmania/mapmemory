@@ -3,6 +3,13 @@ const namedCities = new Set(); // Set to track cities that have already been nam
 let settlementLocations = []; // Array to store settlement data
 let markers = []; // Array to store markers for easy removal
 
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.openstreetmap.ru/api/interpreter',
+  'https://overpass.nchc.org.tw/api/interpreter'
+];
+
 // Get the score div element globally so it can be accessed when updating the score
 const scoreDiv = document.getElementById("score");
 
@@ -76,6 +83,10 @@ const fetchSettlementsOnClick = (event) => {
 
   showSearchingMessage();
 
+  // ... [Keep everything in fetchSettlementsOnClick up to showSearchingMessage()] ...
+
+  showSearchingMessage();
+
   const query = `[out:json][timeout:25];
     (
       node["place"~"city"](${lat - 1.0},${lng - 1.0},${lat + 1.0},${lng + 1.0});
@@ -84,82 +95,107 @@ const fetchSettlementsOnClick = (event) => {
     >;
     out skel qt 25;`;
 
-  fetch(
-    `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch data from Overpass API");
+  // --- REPLACE FROM HERE DOWN TO THE END OF THE CATCH BLOCK ---
+  
+  // Use an immediately invoked async function expression (IIFE) to handle sequential server attempts
+  (async () => {
+    let elements = null;
+
+    for (let i = 0; i < OVERPASS_ENDPOINTS.length; i++) {
+      const baseUrl = OVERPASS_ENDPOINTS[i];
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout per server
+
+        const response = await fetch(
+          `${baseUrl}?data=${encodeURIComponent(query)}`,
+          { signal: controller.signal }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.warn(`Overpass instance ${baseUrl} failed with status ${response.status}. Trying fallback...`);
+          continue;
+        }
+
+        const data = await response.json();
+        elements = data.elements;
+        break; // Success! Break out of the loop
+      } catch (error) {
+        console.warn(`Network/timeout error with Overpass instance ${baseUrl}:`, error.message);
       }
-      return response.json();
-    })
-    .then((data) => {
-      settlementLocations = data.elements
-        .filter((element) => element.tags && element.tags.name)
-        .map((element) => ({
-          name: element.tags.name,
-          coordinates: [element.lon, element.lat],
-        }))
-        .slice(0, 12);
+    }
 
-      console.log("Settlements:", settlementLocations);
+    if (!elements) {
+      throw new Error("All Overpass API instances failed to resolve the query.");
+    }
 
-      const citiesDiv = document.getElementById("cities");
-      citiesDiv.innerHTML = "";
-      const bounds = new maplibregl.LngLatBounds();
+    // Process data identical to your original code
+    settlementLocations = elements
+      .filter((element) => element.tags && element.tags.name)
+      .map((element) => ({
+        name: element.tags.name,
+        coordinates: [element.lon, element.lat],
+      }))
+      .slice(0, 12);
 
-      settlementLocations.forEach((settlement, index) => {
-        const cityElement = document.createElement("div");
-        citiesDiv.style.display = "flex";
-        citiesDiv.style.flexWrap = "wrap";
-        citiesDiv.style.gap = "5px";
-        cityElement.className = "draggable";
-        cityElement.textContent = settlement.name;
-        cityElement.draggable = true;
-        cityElement.dataset.index = index;
-        cityElement.style.display = "inline-block";
-        cityElement.style.padding = "5px";
-        cityElement.style.margin = "5px 0";
-        cityElement.style.background = "#ddd";
-        cityElement.style.cursor = "grab";
-        cityElement.style.border = "1px solid #ccc";
-        cityElement.style.whiteSpace = "nowrap";
-        citiesDiv.appendChild(cityElement);
+    console.log("Settlements:", settlementLocations);
 
-        const markerElement = document.createElement("div");
-        markerElement.style.backgroundColor = "white";
-        markerElement.style.width = "10px";
-        markerElement.style.height = "10px";
-        markerElement.style.borderRadius = "50%";
-        markerElement.style.border = "2px solid red";
+    const citiesDiv = document.getElementById("cities");
+    citiesDiv.innerHTML = "";
+    const bounds = new maplibregl.LngLatBounds();
 
-        const marker = new maplibregl.Marker(markerElement)
-          .setLngLat(settlement.coordinates)
-          .addTo(map);
+    settlementLocations.forEach((settlement, index) => {
+      const cityElement = document.createElement("div");
+      citiesDiv.style.display = "flex";
+      citiesDiv.style.flexWrap = "wrap";
+      citiesDiv.style.gap = "5px";
+      cityElement.className = "draggable";
+      cityElement.textContent = settlement.name;
+      cityElement.draggable = true;
+      cityElement.dataset.index = index;
+      cityElement.style.display = "inline-block";
+      cityElement.style.padding = "5px";
+      cityElement.style.margin = "5px 0";
+      cityElement.style.background = "#ddd";
+      cityElement.style.cursor = "grab";
+      cityElement.style.border = "1px solid #ccc";
+      cityElement.style.whiteSpace = "nowrap";
+      citiesDiv.appendChild(cityElement);
 
-        markers.push({ name: settlement.name, marker });
+      const markerElement = document.createElement("div");
+      markerElement.style.backgroundColor = "white";
+      markerElement.style.width = "10px";
+      markerElement.style.height = "10px";
+      markerElement.style.borderRadius = "50%";
+      markerElement.style.border = "2px solid red";
 
-        bounds.extend(settlement.coordinates);
-      });
+      const marker = new maplibregl.Marker(markerElement)
+        .setLngLat(settlement.coordinates)
+        .addTo(map);
 
-      map.fitBounds(bounds, { padding: 20 });
+      markers.push({ name: settlement.name, marker });
 
-      const scoreDiv = document.getElementById("score");
-      if (scoreDiv) {
-        scoreDiv.textContent =
-          "Drag each city name to its correct position on the map.";
-      }
-
-      removeSearchingMessage();
-      map.off("click", fetchSettlementsOnClick);
-
-      enableDragAndSnap();
-    })
-    .catch((error) => {
-      console.error("Error fetching Overpass data:", error);
-      removeSearchingMessage();
+      bounds.extend(settlement.coordinates);
     });
-};
+
+    map.fitBounds(bounds, { padding: 20 });
+
+    const scoreDiv = document.getElementById("score");
+    if (scoreDiv) {
+      scoreDiv.textContent = "Drag each city name to its correct position on the map.";
+    }
+
+    removeSearchingMessage();
+    map.off("click", fetchSettlementsOnClick);
+    enableDragAndSnap();
+
+  })().catch((error) => {
+    console.error("Error processing game settlements:", error);
+    removeSearchingMessage();
+  });
+}; 
 
 const enableDragAndSnap = () => {
   const draggableItems = document.querySelectorAll(".draggable");
