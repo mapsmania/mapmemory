@@ -437,12 +437,28 @@ const MapMemoryGame = {
      * @param {number} attempt - Current attempt number
      * @returns {Promise<Array>} Array of settlement data
      */
+    /**
+     * Fetches settlements within a specific radius with automatic server fallbacks
+     * @param {number} lat - Latitude of center point
+     * @param {number} lon - Longitude of center point
+     * @param {number} radius - Search radius in meters
+     * @param {number} attempt - Current attempt number
+     * @returns {Promise<Array>} Array of settlement data
+     */
     async fetchSettlementsWithRadius(lat, lon, radius, attempt)
     {
         const { populationThresholds } = this.config;
 
         const cityThreshold = populationThresholds.city / Math.pow(2, attempt - 1);
         const townThreshold = populationThresholds.town / Math.pow(2, attempt - 1);
+
+        // List of reliable public Overpass instances to fallback on
+        const OVERPASS_ENDPOINTS = [
+            'https://overpass-api.de/api/interpreter',
+            'https://overpass.kumi.systems/api/interpreter',
+            'https://overpass.openstreetmap.ru/api/interpreter',
+            'https://overpass.nchc.org.tw/api/interpreter'
+        ];
 
         const query = `
             [out:json][timeout:25];
@@ -455,19 +471,39 @@ const MapMemoryGame = {
             >;
         `;
 
-        const response = await fetch(
-            `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`
-        );
+        // Sequentially loop through servers until one successfully resolves
+        for (let i = 0; i < OVERPASS_ENDPOINTS.length; i++) {
+            const baseUrl = OVERPASS_ENDPOINTS[i];
+            
+            try {
+                // Setup an AbortController so hanging instances don't block the game loop indefinitely
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout per attempt
 
-        if (!response.ok)
-        {
-            throw new Error(`Overpass API error: ${response.status}`);
+                const response = await fetch(
+                    `${baseUrl}?data=${encodeURIComponent(query)}`,
+                    { signal: controller.signal }
+                );
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    console.warn(`MapMemoryGame: Overpass instance ${baseUrl} failed with status ${response.status}. Trying fallback...`);
+                    continue; 
+                }
+
+                const data = await response.json();
+                return data.elements; // Return elements and exit method on success!
+
+            } catch (error) {
+                console.warn(`MapMemoryGame: Network/timeout error with Overpass instance ${baseUrl}:`, error.message);
+                // Continue to the next instance in the array loop
+            }
         }
 
-        const data = await response.json();
-        return data.elements;
+        // If the loop runs to completion without a return statement, all endpoints failed
+        throw new Error("All public Overpass API endpoints failed to resolve this search region.");
     },
-
     /**
      * Processes search results and prepares game state
      * @param {Array} settlements - Array of raw settlement data
