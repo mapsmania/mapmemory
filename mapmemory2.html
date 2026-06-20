@@ -1,0 +1,55 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="icon" href="https://tripgeo.com/favicon.png" />
+
+    <title>Map Memory</title>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="script2.js" defer></script>
+</head>
+<body>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div id="side-panel">
+
+        <div class="game-header" style="padding: 10px 0;">
+            <div class="map-header">
+                <div class="horizontal-lines"></div>
+                <div class="vertical-lines"></div>
+                <div class="diagonal-lines-1"></div>
+                <div class="diagonal-lines-2"></div>
+                <h1>Map Memory</h1>
+            </div>
+
+            <div style="margin: 0 0 15px 0; line-height: 1.4;">
+                <p>
+                    ▶ Center the map where you want to play
+                </p>
+                <p>
+                    ▶ Tap the map to start
+                </p>
+                <p>
+                    ▶ Drag each city name to its location in the fewest moves posible!
+                </p>
+            </div>
+        </div>
+
+        <div id="score" style="display:none"></div>
+            
+        <div id="cities"></div>
+    </div>
+
+</body>
+</html>
