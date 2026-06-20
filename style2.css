@@ -1,0 +1,361 @@
+/* Base styles */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+#map-container {
+    position: relative;
+    width: 75%;
+    height: 100vh;
+    z-index: 1;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    touch-action: pan-x pan-y;
+}
+
+.map-message {
+    position: absolute !important;
+    z-index: 9999 !important;
+}
+
+#side-panel {
+    width: 25%;
+    height: 100vh;
+    background-color: #f4f4f4;
+    overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base styles update */
+#cities {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; /* Desktop gap */
+    flex-grow: 1;
+    align-content: flex-start;
+}
+
+#score {
+    font-size: 18px;
+    background-color: white;
+    border: 2px solid black;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.draggable {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: transform 0.2s ease;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    margin: 5px 0;
+    font-size: 14px;
+    cursor: grab;
+}
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    #map-container {
+        width: 100%;
+        height: 65vh;
+    }
+
+    #side-panel {
+        width: 100%;
+        height: 35vh;
+        padding: 8px;
+    }
+
+    .draggable {
+        padding: 5px;
+        margin: 3px;
+        font-size: 14px;
+    }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+    #map-container {
+        height: 60vh;
+    }
+
+    #side-panel {
+        height: 40vh;
+    }
+
+    #cities {
+        gap: 4px !important; /* Reduced gap for mobile */
+    }
+
+    .draggable {
+        padding: 5px;
+        margin: 2px;
+        font-size: 14px;
+        background-color: #ffffff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    #score {
+        font-size: 16px;
+        padding: 8px;
+        margin: 8px 0;
+    }
+
+    h2 {
+        font-size: 18px;
+        margin: 8px 0;
+    }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+    #map-container {
+        height: 55vh;
+    }
+
+    #side-panel {
+        height: 45vh;
+    }
+
+    #cities {
+        gap: 3px !important; /* Even smaller gap for very small screens */
+    }
+
+    .draggable {
+        padding: 5px;
+    }
+}
+
+/* Portrait orientation specific styles */
+@media (orientation: portrait) and (max-width: 768px) {
+    #map-container {
+        height: 50vh;
+    }
+
+    #side-panel {
+        height: 50vh;
+    }
+}
+
+/* Landscape orientation specific styles */
+@media (orientation: landscape) and (max-height: 600px) {
+    body {
+        flex-direction: row;
+    }
+
+    #map-container {
+        width: 70%;
+        height: 100vh;
+    }
+
+    #side-panel {
+        width: 30%;
+        height: 100vh;
+    }
+
+    .draggable {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .draggable {
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        padding: 5px;
+        margin: 2px;
+    }
+
+        .draggable:active {
+            transform: scale(1.05);
+        }
+
+    #map {
+        touch-action: pan-x pan-y pinch-zoom;
+    }
+
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+    .draggable {
+        border: 2px solid #000000 !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    #score {
+        border: 3px solid #000000;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .draggable {
+        transition: none;
+    }
+}
+
+/* Header Animation */
+.map-header {
+    position: relative;
+    padding: 20px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e6eef3 100%);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+    .map-header h1 {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+/* Grid line animations remain the same */
+.horizontal-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: repeating-linear-gradient( transparent 0px, transparent 29px, rgba(44, 62, 80, 0.15) 30px );
+    animation: moveVertical 20s linear infinite;
+}
+
+.vertical-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: repeating-linear-gradient( 90deg, transparent 0px, transparent 29px, rgba(44, 62, 80, 0.15) 30px );
+    animation: moveHorizontal 15s linear infinite;
+}
+
+.diagonal-lines-1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: repeating-linear-gradient( 45deg, transparent 0px, transparent 29px, rgba(52, 152, 219, 0.15) 30px );
+    animation: moveDiagonal1 25s linear infinite;
+}
+
+.diagonal-lines-2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: repeating-linear-gradient( -45deg, transparent 0px, transparent 29px, rgba(231, 76, 60, 0.15) 30px );
+    animation: moveDiagonal2 25s linear infinite;
+}
+
+/* Updated circle animations */
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    background: transparent;
+    animation: expandAndFade 4s ease-out infinite;
+    z-index: 1;
+    opacity: 0.2; /* Lower base opacity */
+}
+
+@keyframes moveVertical {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 0 30px;
+    }
+}
+
+@keyframes moveHorizontal {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 30px 0;
+    }
+}
+
+@keyframes moveDiagonal1 {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 30px 30px;
+    }
+}
+
+@keyframes moveDiagonal2 {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -30px 30px;
+    }
+}
+
+/* New animation with gradual fade */
+@keyframes expandAndFade {
+    0% {
+        transform: scale(0);
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.15;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
